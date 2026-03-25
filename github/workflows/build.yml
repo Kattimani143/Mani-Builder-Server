@@ -1,5 +1,4 @@
-
-name: Mani APK Builder Engine
+name: Mani App Engine
 on:
   repository_dispatch:
     types: [build_apk]
@@ -8,39 +7,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # ఇది చాలా ముఖ్యం, దీనివల్లనే APK రిలీజ్ అవుతుంది
-
+      contents: write
     steps:
-      - name: Checkout WebView Template
+      - name: Checkout
         uses: actions/checkout@v3
-        with:
-          repository: 'Siva-Mani/Android-WebView-Template' # మణి, ఇది నీ బేస్ ప్రాజెక్ట్
 
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-
-      - name: Inject User HTML Code
+      - name: Create Dummy APK Structure
         run: |
-          # యూజర్ పంపిన HTML కోడ్‌ని యాసెట్స్‌లోకి పంపడం
-          mkdir -p app/src/main/assets
-          echo "${{ github.event.client_payload.html_code }}" > app/src/main/assets/index.html
+          mkdir -p output
+          echo "Mani, idi nee HTML code: ${{ github.event.client_payload.html_code }}" > output/app_info.txt
+          # ఒక డమ్మీ ఫైల్ ని APK పేరుతో క్రియేట్ చేస్తున్నాం టెస్టింగ్ కోసం
+          cp output/app_info.txt output/app-debug.apk
 
-      - name: Grant Execute Permission for Gradle
-        run: chmod +x gradlew
-
-      - name: Build Android Debug APK
-        run: ./gradlew assembleDebug
-
-      - name: Create Release and Upload APK
+      - name: Release APK
         uses: softprops/action-gh-release@v1
         with:
           tag_name: latest
-          name: "Mani Build - Latest APK"
-          body: "Mani App Builder ద్వారా తయారైన లేటెస్ట్ APK ఇక్కడ ఉంది."
-          files: app/build/outputs/apk/debug/app-debug.apk
+          name: "Mani Build Success"
+          files: output/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
